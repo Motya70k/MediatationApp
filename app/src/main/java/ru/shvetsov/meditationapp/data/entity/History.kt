@@ -8,5 +8,5 @@ import androidx.room.PrimaryKey
 data class History(
     @PrimaryKey (autoGenerate = true) val id: Int?,
     @ColumnInfo (name = "date") val date: String,
-    @ColumnInfo (name = "meditation_time") val meditationTime: Long
+    @ColumnInfo (name = "meditation_time") val meditationTime: String
 )

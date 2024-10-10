@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.shvetsov.meditationapp.data.db.HistoryDataBase
 import ru.shvetsov.meditationapp.data.entity.History
@@ -31,7 +32,7 @@ class MainViewModel @Inject constructor (
     private var timer: CountDownTimer? = null
     var remainingTime: Long = 0L
     private var isPaused = false
-    private var initialTime: Long = 0L
+    var initialTime: Long = 0L
 
     fun setTime(selectedTime: Long) {
         _time.value = selectedTime * 60 * 1000
@@ -47,10 +48,14 @@ class MainViewModel @Inject constructor (
             initialTime = remainingTime
         }
 
-        timer = object : CountDownTimer(remainingTime, 1000) {
+        onTick(remainingTime)
+
+        timer = object : CountDownTimer(remainingTime + 1000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 remainingTime = millisUntilFinished
                 onTick(millisUntilFinished)
+                if (remainingTime < 0) remainingTime = 0
+                onTick(remainingTime)
                 val progressValue = millisUntilFinished.toFloat() / initialTime
                 _progress.value = progressValue
             }
@@ -58,6 +63,7 @@ class MainViewModel @Inject constructor (
             override fun onFinish() {
                 onFinish()
                 _progress.value = 0f
+                remainingTime = 0L
             }
         }.start()
 
@@ -84,7 +90,9 @@ class MainViewModel @Inject constructor (
     fun loadHistoryItem() {
         viewModelScope.launch {
             try {
-                _historyItem.value = historyUseCase.getAllHistory()
+                val historyList = historyUseCase.getAllHistory()
+                Log.d("LoadHistory", "History loaded: ${historyList.size} items")
+                _historyItem.value = historyList
             } catch (e: Exception) {
                 Log.d("LoadItems", "Failed")
             }
@@ -93,12 +101,11 @@ class MainViewModel @Inject constructor (
 
     fun insertHistoryRecord(historyRecord: History) {
         Log.d("InsertRecord", "Inserting record: $historyRecord")
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 historyUseCase.insertHistoryRecord(historyRecord)
-                val currentHistoryItems = _historyItem.value?.toMutableList() ?: mutableListOf()
-                currentHistoryItems.add(historyRecord)
-                _historyItem.postValue(currentHistoryItems)
+                val updatedHistoryItems = historyUseCase.getAllHistory()
+                _historyItem.postValue(updatedHistoryItems)
                 Log.d("Insert", "Success")
             } catch (e: Exception) {
                 Log.d("Load", "Failed")

@@ -59,12 +59,14 @@ class FragmentHome : Fragment() {
                     binding.timerCircle.setProgress(it.toFloat())
                 },
                 onFinish = {
+                    Log.d("Timer", "Timer finished with remainingTime: ${viewModel.remainingTime}")
                     binding.timerTextView.text = "00:00"
                     binding.timerCircle.setProgress(0f)
-                    saveMeditationRecord(viewModel.remainingTime)
+                    saveMeditationRecord()
                     showNotification()
                 }
             )
+            binding.timerTextView.text = formatTime(viewModel.remainingTime)
         }
 
         binding.timerTextView.setOnClickListener {
@@ -76,7 +78,7 @@ class FragmentHome : Fragment() {
 
         binding.stopButton.setOnClickListener {
             viewModel.stopTimer()
-            saveMeditationRecord(viewModel.remainingTime)
+            saveMeditationRecord()
             binding.timerTextView.text = "00:00"
         }
 
@@ -87,7 +89,7 @@ class FragmentHome : Fragment() {
 
     private fun formatTime(timeInMillis: Long): String {
         val hours = (timeInMillis / 1000) / 3600
-        val minutes = (timeInMillis / 1000) / 60
+        val minutes = ((timeInMillis / 1000) % 3600) / 60
         val seconds = (timeInMillis / 1000) % 60
         return String.format(Locale("ru", "RU"), "%02d:%02d:%02d", hours, minutes, seconds)
     }
@@ -140,10 +142,10 @@ class FragmentHome : Fragment() {
         }
     }
 
-    private fun saveMeditationRecord(duration: Long) {
-        Log.d("SaveRecord", "Trying to save record with duration: $duration")
+    private fun saveMeditationRecord() {
+        val duration = viewModel.initialTime - viewModel.remainingTime
         val formattedDate = formatDate()
-        val historyRecord = History(null, date = formattedDate, meditationTime = duration)
+        val historyRecord = History(null, date = formattedDate, meditationTime = formatTime(duration))
         viewModel.insertHistoryRecord(historyRecord)
     }
 }

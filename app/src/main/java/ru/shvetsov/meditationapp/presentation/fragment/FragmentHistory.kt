@@ -1,5 +1,6 @@
 package ru.shvetsov.meditationapp.presentation.fragment
 
+import HistoryItemAdapter
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,7 +10,6 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import ru.shvetsov.meditationapp.databinding.FragmentHistoryBinding
-import ru.shvetsov.meditationapp.presentation.adapter.HistoryItemAdapter
 import ru.shvetsov.meditationapp.presentation.viewmodel.MainViewModel
 
 @AndroidEntryPoint
@@ -38,13 +38,13 @@ class FragmentHistory : Fragment() {
         binding.rcViewHistory.apply {
             layoutManager = LinearLayoutManager(requireContext())
             historyItemAdapter = HistoryItemAdapter(emptyList())
-            binding.rcViewHistory.adapter = historyItemAdapter
+            adapter = historyItemAdapter
         }
     }
 
     private fun observe() {
-        viewModel.historyItem.observe(viewLifecycleOwner) {
-            historyItemAdapter.updateItems(it)
+        viewModel.historyItem.observe(viewLifecycleOwner) { historyList ->
+            historyItemAdapter.updateItems(historyList)
         }
     }
 }
