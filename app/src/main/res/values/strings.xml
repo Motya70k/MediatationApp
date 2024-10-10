@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MeditationApp</string>
+    <string name="home">Home</string>
+    <string name="guide">Guide</string>
+    <string name="history">History</string>
+    <string name="welcome">Welcome!</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="it_s_time_to_meditation">It\'s time to meditation</string>
+    <string name="notification_channel_name">notification_timer</string>
+    <string name="meditation_end">Meditation end!</string>
+    <string name="date">Date</string>
+    <string name="meditation_time">Meditation time</string>
+</resources>
