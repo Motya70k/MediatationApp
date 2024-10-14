@@ -8,9 +8,11 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.replace
 import dagger.hilt.android.AndroidEntryPoint
 import ru.shvetsov.meditationapp.R
 import ru.shvetsov.meditationapp.databinding.ActivityMainBinding
+import ru.shvetsov.meditationapp.presentation.fragment.FragmentGuide
 import ru.shvetsov.meditationapp.presentation.fragment.FragmentHistory
 import ru.shvetsov.meditationapp.presentation.fragment.FragmentHome
 
@@ -20,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val fragmentHome = FragmentHome()
     private val fragmentHistory = FragmentHistory()
+    private val fragmentGuide = FragmentGuide()
 
     private val requestPermissionLauncher =
         registerForActivityResult(
@@ -55,7 +58,9 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.meditation_guide_menu_item -> {
-                    Log.d("guide", "open")
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentHolder, fragmentGuide)
+                        .commit()
                 }
 
                 R.id.history_menu_item -> {

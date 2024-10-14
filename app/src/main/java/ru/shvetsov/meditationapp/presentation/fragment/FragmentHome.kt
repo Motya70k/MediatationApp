@@ -121,7 +121,7 @@ class FragmentHome : Fragment() {
         )
         val notification =
             NotificationCompat.Builder(requireActivity().applicationContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.baseline_done_24)
+                .setSmallIcon(R.drawable.baseline_done_64)
                 .setContentTitle("Meditation done")
                 .setContentText(getString(R.string.meditation_end))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)

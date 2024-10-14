@@ -1,3 +1,5 @@
+package ru.shvetsov.meditationapp.presentation.adapter
+
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +13,7 @@ class HistoryItemAdapter(private var historyItems: List<History>) :
 
         fun bind(historyItem: History) {
             binding.meditationDateTextView.text = historyItem.date
-            binding.meditationTimeTextView.text = historyItem.meditationTime.toString()
+            binding.meditationTimeTextView.text = historyItem.meditationTime
         }
     }
 

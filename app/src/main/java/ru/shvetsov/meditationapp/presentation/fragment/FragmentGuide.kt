@@ -1,6 +1,5 @@
 package ru.shvetsov.meditationapp.presentation.fragment
 
-import ru.shvetsov.meditationapp.presentation.adapter.HistoryItemAdapter
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,21 +8,22 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import ru.shvetsov.meditationapp.databinding.FragmentHistoryBinding
+import ru.shvetsov.meditationapp.databinding.FragmentGuideBinding
+import ru.shvetsov.meditationapp.presentation.adapter.GuideItemAdapter
 import ru.shvetsov.meditationapp.presentation.viewmodel.MainViewModel
 
 @AndroidEntryPoint
-class FragmentHistory : Fragment() {
+class FragmentGuide : Fragment() {
 
-    private lateinit var binding: FragmentHistoryBinding
+    private lateinit var binding: FragmentGuideBinding
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var historyItemAdapter: HistoryItemAdapter
+    private lateinit var guideItemAdapter: GuideItemAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentHistoryBinding.inflate(inflater, container, false)
+        binding = FragmentGuideBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -31,20 +31,22 @@ class FragmentHistory : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
         observe()
-        viewModel.loadHistoryItem()
+        viewModel.loadAudioGuides()
     }
 
     private fun initRecyclerView() {
-        binding.rcViewHistory.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            historyItemAdapter = HistoryItemAdapter(emptyList())
-            adapter = historyItemAdapter
+        binding.rcViewGuide.apply {
+            layoutManager = LinearLayoutManager(context)
+            guideItemAdapter = GuideItemAdapter(emptyList(), viewModel) { audioGuide ->
+                viewModel.startOrPauseAudio(audioGuide)
+            }
+            adapter = guideItemAdapter
         }
     }
 
     private fun observe() {
-        viewModel.historyItem.observe(viewLifecycleOwner) { historyList ->
-            historyItemAdapter.updateItems(historyList)
+        viewModel.audioList.observe(viewLifecycleOwner) { audioGuides ->
+            guideItemAdapter.updateItems(audioGuides)
         }
     }
 }
