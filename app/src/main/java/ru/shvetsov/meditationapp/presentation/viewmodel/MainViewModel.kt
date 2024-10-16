@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,7 +64,8 @@ class MainViewModel @Inject constructor(
 
     init {
         loadAudioGuides()
-        appContext.registerReceiver(progressReceiver, IntentFilter("UPDATE_PROGRESS"))
+        LocalBroadcastManager.getInstance(appContext)
+            .registerReceiver(progressReceiver, IntentFilter("UPDATE_PROGRESS"))
     }
 
     fun setTime(selectedTime: Long) {
@@ -79,8 +81,6 @@ class MainViewModel @Inject constructor(
             remainingTime = _time.value ?: return
             initialTime = remainingTime
         }
-
-        onTick(remainingTime)
 
         timer = object : CountDownTimer(remainingTime + 1000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -110,7 +110,6 @@ class MainViewModel @Inject constructor(
     fun stopTimer() {
         timer?.cancel()
         _progress.value = 0f
-        remainingTime = 0L
         isPaused = false
     }
 
@@ -119,6 +118,7 @@ class MainViewModel @Inject constructor(
         timer?.cancel()
         mediaPlayer?.release()
         mediaPlayer = null
+        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(progressReceiver)
     }
 
     fun loadHistoryItem() {

@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class AudioPlayerService : Service() {
 
@@ -52,20 +53,21 @@ class AudioPlayerService : Service() {
                 setDataSource(audioUrl)
                 setOnPreparedListener {
                     start()
-                    handler.post(updateProgressTask) // Начинаем обновлять прогресс после старта
+                    handler.post(updateProgressTask)
                 }
                 prepareAsync()
             }
         } else {
             mediaPlayer?.start()
-            handler.post(updateProgressTask) // Обновляем прогресс при повторном старте
+            handler.post(updateProgressTask)
         }
     }
 
     private fun updateProgress(progress: Int) {
-        val intent = Intent("UPDATE_PROGRESS")
-        intent.putExtra("PROGRESS", progress)
-        sendBroadcast(intent)
+        val intent = Intent("UPDATE_PROGRESS").apply {
+            putExtra("PROGRESS", progress)
+        }
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     private fun pauseAudio() {

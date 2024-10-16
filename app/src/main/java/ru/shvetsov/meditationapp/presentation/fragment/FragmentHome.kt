@@ -14,7 +14,7 @@ import android.view.ViewGroup
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import ru.shvetsov.meditationapp.R
 import ru.shvetsov.meditationapp.data.entity.History
@@ -30,7 +30,7 @@ import java.util.Locale
 class FragmentHome : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
