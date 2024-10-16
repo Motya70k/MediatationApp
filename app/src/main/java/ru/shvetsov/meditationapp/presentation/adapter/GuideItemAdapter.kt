@@ -3,6 +3,7 @@ package ru.shvetsov.meditationapp.presentation.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import ru.shvetsov.meditationapp.R
 import ru.shvetsov.meditationapp.data.model.AudioGuide
 import ru.shvetsov.meditationapp.databinding.GuideItemBinding
 import ru.shvetsov.meditationapp.presentation.viewmodel.MainViewModel
@@ -21,12 +22,22 @@ class GuideItemAdapter(
             binding.playButton.setOnClickListener {
                 onPlayClick(audioGuide)
             }
-            val progress = calculateProgress(audioGuide)
-            binding.progressBar.progress = progress
-        }
-        private fun calculateProgress(audioGuide: AudioGuide): Int {
-            // Логика расчета прогресса (например, из viewModel)
-            return viewModel.getProgressForAudio(audioGuide.url)
+
+            viewModel.playerProgress.observeForever { progress ->
+                if (viewModel.currentPlayingAudio == audioGuide) {
+                    binding.progressBar.progress = progress
+                } else {
+                    binding.progressBar.progress = 0
+                }
+            }
+
+            viewModel.isPlaying.observeForever { isPlaying ->
+                if (viewModel.currentPlayingAudio == audioGuide && isPlaying == true) {
+                    binding.playButton.setImageResource(R.drawable.baseline_pause_24)
+                } else {
+                    binding.playButton.setImageResource(R.drawable.baseline_play_arrow_24)
+                }
+            }
         }
     }
 

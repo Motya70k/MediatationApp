@@ -1,9 +1,9 @@
 package ru.shvetsov.meditationapp.presentation.viewmodel
 
+import android.app.Application
+import android.content.Intent
 import android.media.MediaPlayer
 import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,12 +14,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.shvetsov.meditationapp.data.entity.History
 import ru.shvetsov.meditationapp.data.model.AudioGuide
+import ru.shvetsov.meditationapp.data.service.AudioPlayerService
 import ru.shvetsov.meditationapp.domain.usecase.HistoryUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor (
     private val historyUseCase: HistoryUseCase,
+    private val appContext: Application
 ) : ViewModel() {
 
     private val _time = MutableLiveData<Long>()
@@ -37,9 +39,6 @@ class MainViewModel @Inject constructor (
     private val _playerProgress = MutableLiveData<Int>()
     val playerProgress: LiveData<Int> = _playerProgress
 
-    private val handler = Handler(Looper.getMainLooper())
-    private var updateProgressTask: Runnable? = null
-
     private var timer: CountDownTimer? = null
     var remainingTime: Long = 0L
     private var isPaused = false
@@ -48,6 +47,8 @@ class MainViewModel @Inject constructor (
     private var mediaPlayer: MediaPlayer? = null
     private val _isPlaying = MutableLiveData<Boolean>()
     val isPlaying: LiveData<Boolean> = _isPlaying
+
+    var currentPlayingAudio: AudioGuide? = null
 
     init {
         loadAudioGuides()
@@ -112,7 +113,6 @@ class MainViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 val historyList = historyUseCase.getAllHistory()
-                Log.d("LoadHistory", "History loaded: ${historyList.size} items")
                 _historyItem.value = historyList
             } catch (e: Exception) {
                 Log.d("LoadItems", "Failed")
@@ -121,7 +121,6 @@ class MainViewModel @Inject constructor (
     }
 
     fun insertHistoryRecord(historyRecord: History) {
-        Log.d("InsertRecord", "Inserting record: $historyRecord")
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 historyUseCase.insertHistoryRecord(historyRecord)
@@ -135,53 +134,58 @@ class MainViewModel @Inject constructor (
     }
 
     fun startOrPauseAudio(audioGuide: AudioGuide) {
-        if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(audioGuide.url)
-                prepare()
-                start()
-                _isPlaying.value = true
-                startUpdatingProgress()
+        if (currentPlayingAudio == null || currentPlayingAudio != audioGuide) {
+            // Останавливаем предыдущее воспроизведение, если аудио другое
+            stopAudio()
 
-                setOnCompletionListener {
-                    stopAudio()
-                }
-            }
-        } else if (_isPlaying.value == true) {
-            mediaPlayer?.pause()
-            _isPlaying.value = false
-            stopUpdatingProgress()
+            // Запуск нового аудиогайда
+            currentPlayingAudio = audioGuide
+            startAudioService(audioGuide)
+
         } else {
-            mediaPlayer?.start()
-            _isPlaying.value = true
-            startUpdatingProgress()
-        }
-    }
-
-    private fun startUpdatingProgress() {
-        updateProgressTask = object : Runnable {
-            override fun run() {
-                mediaPlayer?.let {
-                    val totalDuration = it.duration
-                    val currentDuration = it.currentPosition
-                    _playerProgress.postValue((currentDuration * 100) / totalDuration)
-                    handler.postDelayed(this, 1000)
-                }
+            // Если аудиогайд тот же, то ставим его на паузу или продолжаем воспроизведение
+            if (_isPlaying.value == true) {
+                pauseAudioService()
+            } else {
+                resumeAudioService()
             }
         }
-        handler.post(updateProgressTask!!)
     }
 
-    private fun stopUpdatingProgress() {
-        updateProgressTask?.let { handler.removeCallbacks(it) }
+    private fun startAudioService(audioGuide: AudioGuide) {
+        val intent = Intent(appContext, AudioPlayerService::class.java).apply {
+            putExtra("AUDIO_URL", audioGuide.url)
+            putExtra("AUDIO_TITLE", audioGuide.title)
+        }
+        appContext.startService(intent)
+        _isPlaying.value = true
     }
 
-    fun stopAudio() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
+    private fun pauseAudioService() {
+        val intent = Intent(appContext, AudioPlayerService::class.java).apply {
+            action = AudioPlayerService.ACTION_PAUSE
+        }
+        appContext.startService(intent)
         _isPlaying.value = false
-        stopUpdatingProgress()
+    }
+
+    private fun resumeAudioService() {
+        val intent = Intent(appContext, AudioPlayerService::class.java).apply {
+            action = AudioPlayerService.ACTION_RESUME
+        }
+        appContext.startService(intent)
+        _isPlaying.value = true
+    }
+
+    private fun stopService() {
+        val intent = Intent(appContext, AudioPlayerService::class.java)
+        appContext.stopService(intent)
+        currentPlayingAudio = null
+    }
+
+    private fun stopAudio() {
+        stopService()
+        _isPlaying.value = false
     }
 
     fun loadAudioGuides() {
@@ -195,9 +199,5 @@ class MainViewModel @Inject constructor (
             AudioGuide("Сосредоточение и отмечание дыхания", "https://victorshiryaev.org/wp-content/uploads/2016/09/07-breath-concentration.mp3"),
         )
         _audioList.value = guides
-    }
-
-    fun getProgressForAudio(audioUrl: String): Int {
-        return playerProgress.value ?: 0
     }
 }
