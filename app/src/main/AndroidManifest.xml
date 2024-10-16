@@ -16,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MeditationApp"
         tools:targetApi="31">
+        <service
+            android:name=".data.service.AudioPlayerService"
+            android:exported="false" />
         <activity
             android:name=".presentation.activity.MainActivity"
             android:exported="true">

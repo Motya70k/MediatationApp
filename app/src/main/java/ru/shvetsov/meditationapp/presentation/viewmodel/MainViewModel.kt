@@ -1,8 +1,12 @@
 package ru.shvetsov.meditationapp.presentation.viewmodel
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -19,7 +23,7 @@ import ru.shvetsov.meditationapp.domain.usecase.HistoryUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor (
+class MainViewModel @Inject constructor(
     private val historyUseCase: HistoryUseCase,
     private val appContext: Application
 ) : ViewModel() {
@@ -50,8 +54,16 @@ class MainViewModel @Inject constructor (
 
     var currentPlayingAudio: AudioGuide? = null
 
+    private val progressReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val progress = intent?.getIntExtra("PROGRESS", 0) ?: return
+            _playerProgress.value = progress
+        }
+    }
+
     init {
         loadAudioGuides()
+        appContext.registerReceiver(progressReceiver, IntentFilter("UPDATE_PROGRESS"))
     }
 
     fun setTime(selectedTime: Long) {
@@ -135,15 +147,11 @@ class MainViewModel @Inject constructor (
 
     fun startOrPauseAudio(audioGuide: AudioGuide) {
         if (currentPlayingAudio == null || currentPlayingAudio != audioGuide) {
-            // Останавливаем предыдущее воспроизведение, если аудио другое
             stopAudio()
-
-            // Запуск нового аудиогайда
             currentPlayingAudio = audioGuide
             startAudioService(audioGuide)
 
         } else {
-            // Если аудиогайд тот же, то ставим его на паузу или продолжаем воспроизведение
             if (_isPlaying.value == true) {
                 pauseAudioService()
             } else {
@@ -190,13 +198,34 @@ class MainViewModel @Inject constructor (
 
     fun loadAudioGuides() {
         val guides = listOf(
-            AudioGuide("Изучаем ощущения тела через позу 1", "https://victorshiryaev.org/wp-content/uploads/2016/09/01-posture-awareness.mp3"),
-            AudioGuide("Изучаем ощущения тела через позу 2", "https://victorshiryaev.org/wp-content/uploads/2016/09/02-posture-awareness-2.mp3"),
-            AudioGuide("Расслабление тела, расслабление ума", "https://victorshiryaev.org/wp-content/uploads/2016/09/03-calm-body-calm-mind.mp3"),
-            AudioGuide("Практика сканирования тела", "https://victorshiryaev.org/wp-content/uploads/2016/09/04-body-sensations-awareness.mp3"),
-            AudioGuide("Исследуем ощущения дыхания", "https://victorshiryaev.org/wp-content/uploads/2016/09/05-concentration-on-breathing.mp3"),
-            AudioGuide("Дыхание и расслабление", "https://victorshiryaev.org/wp-content/uploads/2016/09/06-breath-relaxation_final.mp3"),
-            AudioGuide("Сосредоточение и отмечание дыхания", "https://victorshiryaev.org/wp-content/uploads/2016/09/07-breath-concentration.mp3"),
+            AudioGuide(
+                "Изучаем ощущения тела через позу 1",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/01-posture-awareness.mp3"
+            ),
+            AudioGuide(
+                "Изучаем ощущения тела через позу 2",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/02-posture-awareness-2.mp3"
+            ),
+            AudioGuide(
+                "Расслабление тела, расслабление ума",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/03-calm-body-calm-mind.mp3"
+            ),
+            AudioGuide(
+                "Практика сканирования тела",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/04-body-sensations-awareness.mp3"
+            ),
+            AudioGuide(
+                "Исследуем ощущения дыхания",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/05-concentration-on-breathing.mp3"
+            ),
+            AudioGuide(
+                "Дыхание и расслабление",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/06-breath-relaxation_final.mp3"
+            ),
+            AudioGuide(
+                "Сосредоточение и отмечание дыхания",
+                "https://victorshiryaev.org/wp-content/uploads/2016/09/07-breath-concentration.mp3"
+            ),
         )
         _audioList.value = guides
     }

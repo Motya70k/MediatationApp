@@ -3,7 +3,9 @@ package ru.shvetsov.meditationapp.data.service
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 
 class AudioPlayerService : Service() {
@@ -16,7 +18,19 @@ class AudioPlayerService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var audioUrl: String? = null
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateProgressTask = object : Runnable {
+        override fun run() {
+            mediaPlayer?.let {
+                val progress = (it.currentPosition * 100) / it.duration
+                updateProgress(progress)
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("AudioPlayerService", "Service started")
         val action = intent?.action
 
         when (action) {
@@ -33,18 +47,25 @@ class AudioPlayerService : Service() {
     }
 
     private fun startAudio(audioUrl: String) {
-        Log.d("AudioPlayerService", "Starting audio with URL: $audioUrl")
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(audioUrl)
                 setOnPreparedListener {
                     start()
+                    handler.post(updateProgressTask) // Начинаем обновлять прогресс после старта
                 }
                 prepareAsync()
             }
         } else {
             mediaPlayer?.start()
+            handler.post(updateProgressTask) // Обновляем прогресс при повторном старте
         }
+    }
+
+    private fun updateProgress(progress: Int) {
+        val intent = Intent("UPDATE_PROGRESS")
+        intent.putExtra("PROGRESS", progress)
+        sendBroadcast(intent)
     }
 
     private fun pauseAudio() {

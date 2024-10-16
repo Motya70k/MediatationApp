@@ -11,4 +11,7 @@
     <string name="date">Date</string>
     <string name="meditation_time">Meditation time</string>
     <string name="lesson">Lesson </string>
+    <string name="meditation_info">Meditation info</string>
+    <string name="time">Time</string>
+    <string name="icon">icon</string>
 </resources>
