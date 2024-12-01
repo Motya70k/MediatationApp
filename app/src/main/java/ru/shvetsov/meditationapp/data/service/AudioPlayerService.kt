@@ -6,15 +6,14 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import ru.shvetsov.meditationapp.utils.Constant.ACTION_PAUSE
+import ru.shvetsov.meditationapp.utils.Constant.ACTION_RESUME
+import ru.shvetsov.meditationapp.utils.Constant.AUDIO_URL
+import ru.shvetsov.meditationapp.utils.Constant.PROGRESS
+import ru.shvetsov.meditationapp.utils.Constant.UPDATE_PROGRESS
 
 class AudioPlayerService : Service() {
-
-    companion object {
-        const val ACTION_PAUSE = "ru.shvetsov.meditationapp.action.PAUSE"
-        const val ACTION_RESUME = "ru.shvetsov.meditationapp.action.RESUME"
-    }
 
     private var mediaPlayer: MediaPlayer? = null
     private var audioUrl: String? = null
@@ -31,14 +30,13 @@ class AudioPlayerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("AudioPlayerService", "Service started")
         val action = intent?.action
 
         when (action) {
             ACTION_PAUSE -> pauseAudio()
             ACTION_RESUME -> resumeAudio()
             else -> {
-                audioUrl = intent?.getStringExtra("AUDIO_URL")
+                audioUrl = intent?.getStringExtra(AUDIO_URL)
                 audioUrl?.let {
                     startAudio(it)
                 }
@@ -64,8 +62,8 @@ class AudioPlayerService : Service() {
     }
 
     private fun updateProgress(progress: Int) {
-        val intent = Intent("UPDATE_PROGRESS").apply {
-            putExtra("PROGRESS", progress)
+        val intent = Intent(UPDATE_PROGRESS).apply {
+            putExtra(PROGRESS, progress)
         }
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }

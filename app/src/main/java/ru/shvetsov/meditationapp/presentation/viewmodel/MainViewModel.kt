@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -21,6 +20,24 @@ import ru.shvetsov.meditationapp.data.entity.History
 import ru.shvetsov.meditationapp.data.model.AudioGuide
 import ru.shvetsov.meditationapp.data.service.AudioPlayerService
 import ru.shvetsov.meditationapp.domain.usecase.HistoryUseCase
+import ru.shvetsov.meditationapp.utils.Constant.ACTION_PAUSE
+import ru.shvetsov.meditationapp.utils.Constant.ACTION_RESUME
+import ru.shvetsov.meditationapp.utils.Constant.AUDIO_TITLE
+import ru.shvetsov.meditationapp.utils.Constant.AUDIO_URL
+import ru.shvetsov.meditationapp.utils.Constant.FIFTH_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.FIFTH_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.FIRST_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.FIRST_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.FOURTH_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.FOURTH_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.SECOND_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.SECOND_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.SEVENTH_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.SEVENTH_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.SIXTH_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.SIXTH_MEDITATION_GUIDE_URL
+import ru.shvetsov.meditationapp.utils.Constant.THIRD_MEDITATION_GUIDE
+import ru.shvetsov.meditationapp.utils.Constant.THIRD_MEDITATION_GUIDE_URL
 import javax.inject.Inject
 
 @HiltViewModel
@@ -138,7 +155,6 @@ class MainViewModel @Inject constructor(
                 historyUseCase.insertHistoryRecord(historyRecord)
                 val updatedHistoryItems = historyUseCase.getAllHistory()
                 _historyItem.postValue(updatedHistoryItems)
-                Log.d("Insert", "Success")
             } catch (e: Exception) {
                 Log.d("Load", "Failed")
             }
@@ -162,8 +178,8 @@ class MainViewModel @Inject constructor(
 
     private fun startAudioService(audioGuide: AudioGuide) {
         val intent = Intent(appContext, AudioPlayerService::class.java).apply {
-            putExtra("AUDIO_URL", audioGuide.url)
-            putExtra("AUDIO_TITLE", audioGuide.title)
+            putExtra(AUDIO_URL, audioGuide.url)
+            putExtra(AUDIO_TITLE, audioGuide.title)
         }
         appContext.startService(intent)
         _isPlaying.value = true
@@ -171,7 +187,7 @@ class MainViewModel @Inject constructor(
 
     private fun pauseAudioService() {
         val intent = Intent(appContext, AudioPlayerService::class.java).apply {
-            action = AudioPlayerService.ACTION_PAUSE
+            action = ACTION_PAUSE
         }
         appContext.startService(intent)
         _isPlaying.value = false
@@ -179,7 +195,7 @@ class MainViewModel @Inject constructor(
 
     private fun resumeAudioService() {
         val intent = Intent(appContext, AudioPlayerService::class.java).apply {
-            action = AudioPlayerService.ACTION_RESUME
+            action = ACTION_RESUME
         }
         appContext.startService(intent)
         _isPlaying.value = true
@@ -199,32 +215,32 @@ class MainViewModel @Inject constructor(
     fun loadAudioGuides() {
         val guides = listOf(
             AudioGuide(
-                "Изучаем ощущения тела через позу 1",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/01-posture-awareness.mp3"
+                FIRST_MEDITATION_GUIDE,
+                FIRST_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Изучаем ощущения тела через позу 2",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/02-posture-awareness-2.mp3"
+                SECOND_MEDITATION_GUIDE,
+                SECOND_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Расслабление тела, расслабление ума",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/03-calm-body-calm-mind.mp3"
+                THIRD_MEDITATION_GUIDE,
+                THIRD_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Практика сканирования тела",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/04-body-sensations-awareness.mp3"
+                FOURTH_MEDITATION_GUIDE,
+                FOURTH_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Исследуем ощущения дыхания",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/05-concentration-on-breathing.mp3"
+                FIFTH_MEDITATION_GUIDE,
+                FIFTH_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Дыхание и расслабление",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/06-breath-relaxation_final.mp3"
+                SIXTH_MEDITATION_GUIDE,
+                SIXTH_MEDITATION_GUIDE_URL
             ),
             AudioGuide(
-                "Сосредоточение и отмечание дыхания",
-                "https://victorshiryaev.org/wp-content/uploads/2016/09/07-breath-concentration.mp3"
+                SEVENTH_MEDITATION_GUIDE,
+                SEVENTH_MEDITATION_GUIDE_URL
             ),
         )
         _audioList.value = guides

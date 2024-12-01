@@ -59,8 +59,7 @@ class FragmentHome : Fragment() {
                     binding.timerCircle.setProgress(it.toFloat())
                 },
                 onFinish = {
-                    Log.d("Timer", "Timer finished with remainingTime: ${viewModel.remainingTime}")
-                    binding.timerTextView.text = "00:00"
+                    binding.timerTextView.text = getString(R.string._00_00)
                     binding.timerCircle.setProgress(0f)
                     saveMeditationRecord()
                     showNotification()
@@ -79,7 +78,7 @@ class FragmentHome : Fragment() {
         binding.stopButton.setOnClickListener {
             viewModel.stopTimer()
             saveMeditationRecord()
-            binding.timerTextView.text = "00:00"
+            binding.timerTextView.text = getString(R.string._00_00)
         }
 
         binding.pauseButton.setOnClickListener {
@@ -122,7 +121,7 @@ class FragmentHome : Fragment() {
         val notification =
             NotificationCompat.Builder(requireActivity().applicationContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.baseline_done_64)
-                .setContentTitle("Meditation done")
+                .setContentTitle(getString(R.string.meditation_done))
                 .setContentText(getString(R.string.meditation_end))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)

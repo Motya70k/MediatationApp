@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.replace
 import dagger.hilt.android.AndroidEntryPoint
 import ru.shvetsov.meditationapp.R
 import ru.shvetsov.meditationapp.databinding.ActivityMainBinding
