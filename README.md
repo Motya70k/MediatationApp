@@ -29,7 +29,7 @@ ___
    + Склонировать проект
    ```
    git init
-   git clone https://github.com/Motya70k/MeditationGuides
+   git clone https://github.com/mvshvetsov/MeditationGuides
    ```
 2. Открыть проект в Android Studio
 3. Синхронизировать проект
